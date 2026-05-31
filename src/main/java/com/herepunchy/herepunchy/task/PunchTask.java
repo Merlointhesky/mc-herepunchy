@@ -153,8 +153,8 @@ public class PunchTask extends BukkitRunnable implements Listener {
                 double netDisplacement = current.distance(baselineLocation);
                 
                 // If player hasn't made real progress (moved less than 0.5 blocks net over 10 ticks)
-                // and we are not in action cooldown
-                if (netDisplacement < 0.5 && actionCooldown <= 0) {
+                // and we are not in action cooldown and not currently charging/pulling a bow/crossbow
+                if (netDisplacement < 0.5 && actionCooldown <= 0 && !isChargingBow) {
                     inactiveTicks += 10;
                 } else {
                     inactiveTicks = 0;
@@ -165,9 +165,9 @@ public class PunchTask extends BukkitRunnable implements Listener {
             }
         }
 
-        // Check for inactivity threshold (20 ticks = 2.0 seconds of absolute freeze or lack of progress)
-        if (inactiveTicks >= 20) {
-            player.sendMessage(Component.text("⚠️ Inactivity detected! Bypassing patrol point...").color(NamedTextColor.YELLOW));
+        // Check for inactivity threshold (normally 20 ticks = 2.0 seconds, but 100 ticks = 10.0 seconds when pulling/charging a bow)
+        int threshold = isChargingBow ? 100 : 20;
+        if (inactiveTicks >= threshold) {
             inactiveTicks = 0;
             stuckTicks = 0;
 
@@ -981,9 +981,62 @@ public class PunchTask extends BukkitRunnable implements Listener {
         player.getInventory().setHeldItemSlot(foodSlot);
         player.playSound(player.getLocation(), Sound.ENTITY_GENERIC_EAT, 1.0f, 1.0f);
 
-        // Feed player saturation/hunger
-        player.setFoodLevel(Math.min(20, player.getFoodLevel() + 6));
-        player.setSaturation(Math.min(20f, player.getSaturation() + 8f));
+        // Feed player saturation/hunger depending on food item details
+        int hungerRestore = 6;
+        float saturationRestore = 8.0f;
+
+        switch (food.getType()) {
+            case COOKED_BEEF, COOKED_PORKCHOP, PUMPKIN_PIE -> {
+                hungerRestore = 8;
+                saturationRestore = 12.8f;
+            }
+            case GOLDEN_CARROT -> {
+                hungerRestore = 6;
+                saturationRestore = 14.4f;
+            }
+            case COOKED_MUTTON, COOKED_SALMON -> {
+                hungerRestore = 6;
+                saturationRestore = 9.6f;
+            }
+            case COOKED_CHICKEN -> {
+                hungerRestore = 6;
+                saturationRestore = 7.2f;
+            }
+            case COOKED_COD, BAKED_POTATO, BREAD -> {
+                hungerRestore = 5;
+                saturationRestore = 6.0f;
+            }
+            case GOLDEN_APPLE -> {
+                hungerRestore = 4;
+                saturationRestore = 9.6f;
+                player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.REGENERATION, 100, 1));
+                player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.ABSORPTION, 2400, 0));
+            }
+            case ENCHANTED_GOLDEN_APPLE -> {
+                hungerRestore = 4;
+                saturationRestore = 9.6f;
+                player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.REGENERATION, 400, 1)); // Regen II (20s)
+                player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.ABSORPTION, 2400, 3)); // Absorption IV (2m)
+                player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.RESISTANCE, 6000, 0)); // Resistance I (5m)
+                player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.FIRE_RESISTANCE, 6000, 0)); // Fire Resistance I (5m)
+            }
+            case APPLE, CARROT -> {
+                hungerRestore = 4;
+                saturationRestore = 2.4f;
+            }
+            case COOKED_RABBIT -> {
+                hungerRestore = 5;
+                saturationRestore = 6.0f;
+            }
+            case MELON_SLICE, COOKIE, SWEET_BERRIES, GLOW_BERRIES -> {
+                hungerRestore = 2;
+                saturationRestore = 1.2f;
+            }
+            default -> {}
+        }
+
+        player.setFoodLevel(Math.min(20, player.getFoodLevel() + hungerRestore));
+        player.setSaturation(Math.min(20f, player.getSaturation() + saturationRestore));
         if (player.getHealth() < player.getMaxHealth()) {
             player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + 3.0));
         }
