@@ -1,0 +1,3 @@
+# TODO
+- avoid getting stuck and use a teleport-to-next-block logic if the player hasn't moved from the block for 10 ticks or similar to how we handle it in HereLoggy.
+- sometimes it gets stuck when its trying to kill a mob that doesn't attack the player or a mob that is out of sight, making the player shoot arrows but never hitting the mob or causing a "mexican standoff" with endermen, for example. We should detect if the target entity is not taking damage or if we are not hitting the target entity then we should try move another block. Add a "timeout" of sorts, if we havent killed the target entity, move.

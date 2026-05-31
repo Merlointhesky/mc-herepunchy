@@ -1,0 +1,25 @@
+name: HerePunchy
+version: '${version}'
+main: com.herepunchy.herepunchy.HerePunchyPlugin
+description: Auto-attack and auto-defense combat bot plugin for Paper servers
+api-version: '1.21'
+author: HerePunchy
+softdepend: [AuraSkills]
+
+commands:
+  herepunchy:
+    description: Main command for HerePunchy combat bot
+    usage: /herepunchy <start|stop|restart|clear|setup|config|select>
+    permission: herepunchy.use
+    aliases: [hp]
+
+permissions:
+  herepunchy.use:
+    description: Allows use of the herepunchy command
+    default: true
+  herepunchy.setup:
+    description: Allows use of the chest setup wizard
+    default: true
+  herepunchy.config:
+    description: Allows use of the weapon priority config UI
+    default: true
