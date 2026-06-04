@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   sodipodi:docname="icon.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.80087682"
+     inkscape:cx="397.06481"
+     inkscape:cy="561.25985"
+     inkscape:window-width="3440"
+     inkscape:window-height="1369"
+     inkscape:window-x="1072"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient7789">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop7785" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop7787" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient7789"
+       id="linearGradient7793"
+       x1="-228.72572"
+       y1="131.89816"
+       x2="-125.63092"
+       y2="131.89816"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(282.28009,8.8445219)" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#0000ff;stroke-width:9.498;stroke-linejoin:round;fill-opacity:1;stroke:#ff0000;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect7284"
+       width="180"
+       height="180"
+       x="16.518356"
+       y="30.724142"
+       ry="27.943546"
+       inkscape:export-filename="D:\Development\Java\Minecraft Mods\HereNavy\icon.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <path
+       id="rect7366"
+       style="fill:#ff0000;fill-opacity:0.4375;stroke-width:0.43234;stroke-linejoin:round"
+       d="m 53.381886,104.5473 c -15.480728,0 -27.943518,9.40671 -27.943518,21.09129 v 31.23558 H 158.99402 c 15.48074,0 27.94352,-9.4067 27.94352,-21.09129 v -30.00655 c -2.94756,-0.79396 -6.12505,-1.22903 -9.44282,-1.22903 z"
+       inkscape:export-filename="D:\Development\Java\Minecraft Mods\HereNavy\icon.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:163.673px;line-height:1.25;font-family:sans-serif;fill:url(#linearGradient7793);fill-opacity:1;stroke:none;stroke-width:4.09184"
+       x="50.517456"
+       y="195.28703"
+       id="text2436"
+       transform="scale(1.0708721,0.93381835)"
+       inkscape:export-filename="D:\Development\Java\Minecraft Mods\HereNavy\icon.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96"><tspan
+         sodipodi:role="line"
+         id="tspan2434"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Eras Bold ITC';-inkscape-font-specification:'Eras Bold ITC';fill:url(#linearGradient7793);fill-opacity:1;stroke-width:4.09184"
+         x="50.517456"
+         y="195.28703">H</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:163.673px;line-height:1.25;font-family:sans-serif;fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:4.09184"
+       x="27.99674"
+       y="191.04166"
+       id="text7206"
+       transform="scale(1.0708721,0.93381834)"
+       inkscape:export-filename="D:\Development\Java\Minecraft Mods\HereNavy\icon.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96"><tspan
+         sodipodi:role="line"
+         id="tspan7204"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Eras Bold ITC';-inkscape-font-specification:'Eras Bold ITC';fill:#ff0000;stroke-width:4.09184;fill-opacity:1"
+         x="27.99674"
+         y="191.04166">H</tspan></text>
+  </g>
+</svg>
