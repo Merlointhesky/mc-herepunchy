@@ -926,7 +926,7 @@ public class PunchTask extends BukkitRunnable implements Listener {
                 }
                 player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 1.0f);
                 player.sendMessage(Component.text("🛡 Auto-Defense: Blocked frontal attack!").color(NamedTextColor.GREEN));
-                if (auraSkillsHelper.isAvailable()) {
+                if (auraSkillsHelper != null && auraSkillsHelper.isAvailable()) {
                     auraSkillsHelper.addDefenseXp(player, 15.0);
                     if (hereRolePlayHelper.isAvailable()) hereRolePlayHelper.addCombatXp(player, 15.0);
                 }
@@ -939,7 +939,7 @@ public class PunchTask extends BukkitRunnable implements Listener {
         if (!event.getEntity().getUniqueId().equals(player.getUniqueId())) return;
         if (event.isCancelled()) return;
         if (event instanceof EntityDamageByEntityEvent) {
-            if (auraSkillsHelper.isAvailable()) {
+            if (auraSkillsHelper != null && auraSkillsHelper.isAvailable()) {
                 auraSkillsHelper.addDefenseXp(player, 5.0);
                 if (hereRolePlayHelper.isAvailable()) hereRolePlayHelper.addCombatXp(player, 5.0);
             }
@@ -953,7 +953,7 @@ public class PunchTask extends BukkitRunnable implements Listener {
             if (dead instanceof Monster || dead instanceof Slime || dead instanceof Phantom || dead instanceof Spider) {
                 ItemStack mainHand = player.getInventory().getItemInMainHand();
                 boolean isBow = (mainHand != null && (mainHand.getType() == Material.BOW || mainHand.getType() == Material.CROSSBOW));
-                if (auraSkillsHelper.isAvailable()) {
+                if (auraSkillsHelper != null && auraSkillsHelper.isAvailable()) {
                     if (isBow) {
                         auraSkillsHelper.addArcheryXp(player, 25.0);
                         if (hereRolePlayHelper.isAvailable()) hereRolePlayHelper.addCombatXp(player, 25.0);

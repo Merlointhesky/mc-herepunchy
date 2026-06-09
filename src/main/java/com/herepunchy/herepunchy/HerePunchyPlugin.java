@@ -37,9 +37,11 @@ public final class HerePunchyPlugin extends JavaPlugin {
         this.setupManager = new SetupManager(this);
         this.configManager = new PunchyConfigManager(this);
         this.configUI = new PunchyConfigUI(configManager);
-        this.auraSkillsHelper = new AuraSkillsHelper();
+        if (getServer().getPluginManager().getPlugin("AuraSkills") != null) {
+            this.auraSkillsHelper = new AuraSkillsHelper();
+            this.auraSkillsHelper.init();
+        }
         this.hereRolePlayHelper = new HereRolePlayHelper();
-        this.auraSkillsHelper.init();
         this.hereRolePlayHelper.init();
 
         // Register Command
