@@ -2,6 +2,7 @@ package com.herepunchy.herepunchy.task;
 
 import com.herepunchy.herepunchy.HerePunchyPlugin;
 import com.herepunchy.herepunchy.auraskills.AuraSkillsHelper;
+import com.herepunchy.herepunchy.hereroleplay.HereRolePlayHelper;
 import com.herepunchy.herepunchy.config.PlayerPunchyConfig;
 import com.herepunchy.herepunchy.config.PunchyConfigManager;
 import com.herepunchy.herepunchy.map.ScanManager;
@@ -49,6 +50,7 @@ public class PunchTask extends BukkitRunnable implements Listener {
     private final SetupManager setupManager;
     private final PunchyConfigManager configManager;
     private final AuraSkillsHelper auraSkillsHelper;
+    private final HereRolePlayHelper hereRolePlayHelper;
     private ScanResult scanResult;
 
     private int currentIndex = 0;
@@ -92,7 +94,7 @@ public class PunchTask extends BukkitRunnable implements Listener {
 
     public PunchTask(HerePunchyPlugin plugin, Player player, List<Location> path,
                      ScanManager scanManager, SelectionManager selectionManager, ScanResult scanResult,
-                     AuraSkillsHelper auraSkillsHelper) {
+                     AuraSkillsHelper auraSkillsHelper, HereRolePlayHelper hereRolePlayHelper) {
         this.plugin = plugin;
         this.player = player;
         this.path = path;
@@ -102,6 +104,7 @@ public class PunchTask extends BukkitRunnable implements Listener {
         this.configManager = plugin.getConfigManager();
         this.scanResult = scanResult;
         this.auraSkillsHelper = auraSkillsHelper;
+        this.hereRolePlayHelper = hereRolePlayHelper;
 
         // Record initial inventory to protect items from being dropped
         for (ItemStack item : player.getInventory().getContents()) {
@@ -923,7 +926,10 @@ public class PunchTask extends BukkitRunnable implements Listener {
                 }
                 player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 1.0f);
                 player.sendMessage(Component.text("🛡 Auto-Defense: Blocked frontal attack!").color(NamedTextColor.GREEN));
-                auraSkillsHelper.addDefenseXp(player, 15.0);
+                if (auraSkillsHelper.isAvailable()) {
+                    auraSkillsHelper.addDefenseXp(player, 15.0);
+                    if (hereRolePlayHelper.isAvailable()) hereRolePlayHelper.addCombatXp(player, 15.0);
+                }
             }
         }
     }
@@ -933,7 +939,10 @@ public class PunchTask extends BukkitRunnable implements Listener {
         if (!event.getEntity().getUniqueId().equals(player.getUniqueId())) return;
         if (event.isCancelled()) return;
         if (event instanceof EntityDamageByEntityEvent) {
-            auraSkillsHelper.addDefenseXp(player, 5.0);
+            if (auraSkillsHelper.isAvailable()) {
+                auraSkillsHelper.addDefenseXp(player, 5.0);
+                if (hereRolePlayHelper.isAvailable()) hereRolePlayHelper.addCombatXp(player, 5.0);
+            }
         }
     }
 
@@ -943,10 +952,15 @@ public class PunchTask extends BukkitRunnable implements Listener {
         if (dead.getKiller() != null && dead.getKiller().getUniqueId().equals(player.getUniqueId())) {
             if (dead instanceof Monster || dead instanceof Slime || dead instanceof Phantom || dead instanceof Spider) {
                 ItemStack mainHand = player.getInventory().getItemInMainHand();
-                if (mainHand != null && (mainHand.getType() == Material.BOW || mainHand.getType() == Material.CROSSBOW)) {
-                    auraSkillsHelper.addArcheryXp(player, 25.0);
-                } else {
-                    auraSkillsHelper.addFightingXp(player, 18.0);
+                boolean isBow = (mainHand != null && (mainHand.getType() == Material.BOW || mainHand.getType() == Material.CROSSBOW));
+                if (auraSkillsHelper.isAvailable()) {
+                    if (isBow) {
+                        auraSkillsHelper.addArcheryXp(player, 25.0);
+                        if (hereRolePlayHelper.isAvailable()) hereRolePlayHelper.addCombatXp(player, 25.0);
+                    } else {
+                        auraSkillsHelper.addFightingXp(player, 18.0);
+                        if (hereRolePlayHelper.isAvailable()) hereRolePlayHelper.addCombatXp(player, 18.0);
+                    }
                 }
             }
         }

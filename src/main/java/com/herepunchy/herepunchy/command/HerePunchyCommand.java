@@ -3,6 +3,7 @@ package com.herepunchy.herepunchy.command;
 import com.herepunchy.herepunchy.HerePunchyPlugin;
 import com.herepunchy.herepunchy.auraskills.AuraSkillsHelper;
 import com.herepunchy.herepunchy.config.PunchyConfigUI;
+import com.herepunchy.herepunchy.hereroleplay.HereRolePlayHelper;
 import com.herepunchy.herepunchy.map.ScanManager;
 import com.herepunchy.herepunchy.map.ScanResult;
 import com.herepunchy.herepunchy.path.PathGenerator;
@@ -30,14 +31,16 @@ public class HerePunchyCommand implements CommandExecutor {
     private final SetupManager setupManager;
     private final PunchyConfigUI configUI;
     private final AuraSkillsHelper auraSkillsHelper;
+    private final HereRolePlayHelper hereRolePlayHelper;
 
-    public HerePunchyCommand(SelectionManager selectionManager, PunchTaskManager punchTaskManager, ScanManager scanManager, SetupManager setupManager, PunchyConfigUI configUI, AuraSkillsHelper auraSkillsHelper) {
+    public HerePunchyCommand(SelectionManager selectionManager, PunchTaskManager punchTaskManager, ScanManager scanManager, SetupManager setupManager, PunchyConfigUI configUI, AuraSkillsHelper auraSkillsHelper, HereRolePlayHelper hereRolePlayHelper) {
         this.selectionManager = selectionManager;
         this.punchTaskManager = punchTaskManager;
         this.scanManager = scanManager;
         this.setupManager = setupManager;
         this.configUI = configUI;
         this.auraSkillsHelper = auraSkillsHelper;
+        this.hereRolePlayHelper = hereRolePlayHelper;
     }
 
     @Override
@@ -149,7 +152,7 @@ public class HerePunchyCommand implements CommandExecutor {
             return;
         }
 
-        PunchTask task = new PunchTask(HerePunchyPlugin.getInstance(), player, path, scanManager, selectionManager, result, auraSkillsHelper);
+        PunchTask task = new PunchTask(HerePunchyPlugin.getInstance(), player, path, scanManager, selectionManager, result, auraSkillsHelper, hereRolePlayHelper);
         int startIndex = PathGenerator.findClosestIndex(path, result.getPointA());
         task.setCurrentIndex(startIndex);
         task.setMovingForward(true);
@@ -173,7 +176,7 @@ public class HerePunchyCommand implements CommandExecutor {
         int lastIdx = punchTaskManager.getLastStopIndex(player);
         boolean lastDir = punchTaskManager.getLastDirection(player);
 
-        PunchTask task = new PunchTask(HerePunchyPlugin.getInstance(), player, path, scanManager, selectionManager, result, auraSkillsHelper);
+        PunchTask task = new PunchTask(HerePunchyPlugin.getInstance(), player, path, scanManager, selectionManager, result, auraSkillsHelper, hereRolePlayHelper);
         if (lastIdx >= 0 && lastIdx < path.size()) {
             task.setCurrentIndex(lastIdx);
         }

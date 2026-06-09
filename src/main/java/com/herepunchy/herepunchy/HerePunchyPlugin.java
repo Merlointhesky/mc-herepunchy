@@ -1,6 +1,7 @@
 package com.herepunchy.herepunchy;
 
 import com.herepunchy.herepunchy.auraskills.AuraSkillsHelper;
+import com.herepunchy.herepunchy.hereroleplay.HereRolePlayHelper;
 import com.herepunchy.herepunchy.command.HerePunchyCommand;
 import com.herepunchy.herepunchy.config.PunchyConfigListener;
 import com.herepunchy.herepunchy.config.PunchyConfigManager;
@@ -23,6 +24,7 @@ public final class HerePunchyPlugin extends JavaPlugin {
     private PunchyConfigManager configManager;
     private PunchyConfigUI configUI;
     private AuraSkillsHelper auraSkillsHelper;
+    private HereRolePlayHelper hereRolePlayHelper;
 
     @Override
     public void onEnable() {
@@ -36,10 +38,12 @@ public final class HerePunchyPlugin extends JavaPlugin {
         this.configManager = new PunchyConfigManager(this);
         this.configUI = new PunchyConfigUI(configManager);
         this.auraSkillsHelper = new AuraSkillsHelper();
+        this.hereRolePlayHelper = new HereRolePlayHelper();
         this.auraSkillsHelper.init();
+        this.hereRolePlayHelper.init();
 
         // Register Command
-        getCommand("herepunchy").setExecutor(new HerePunchyCommand(selectionManager, punchTaskManager, scanManager, setupManager, configUI, auraSkillsHelper));
+        getCommand("herepunchy").setExecutor(new HerePunchyCommand(selectionManager, punchTaskManager, scanManager, setupManager, configUI, auraSkillsHelper, hereRolePlayHelper));
 
         // Register Listeners
         getServer().getPluginManager().registerEvents(new PunchListener(selectionManager, punchTaskManager, scanManager, setupManager), this);
@@ -96,5 +100,9 @@ public final class HerePunchyPlugin extends JavaPlugin {
 
     public AuraSkillsHelper getAuraSkillsHelper() {
         return auraSkillsHelper;
+    }
+
+    public HereRolePlayHelper getHereRolePlayHelper() {
+        return hereRolePlayHelper;
     }
 }
