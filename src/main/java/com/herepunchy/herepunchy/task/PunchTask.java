@@ -24,6 +24,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
@@ -92,6 +93,9 @@ public class PunchTask extends BukkitRunnable implements Listener {
     private int targetTicks = 0;
     private int noDamageTicks = 0;
 
+    // Cache of collected items (Material -> Quantity)
+    private final Map<Material, Integer> collectedCounts = new HashMap<>();
+
     public PunchTask(HerePunchyPlugin plugin, Player player, List<Location> path,
                      ScanManager scanManager, SelectionManager selectionManager, ScanResult scanResult,
                      AuraSkillsHelper auraSkillsHelper, HereRolePlayHelper hereRolePlayHelper) {
@@ -142,6 +146,12 @@ public class PunchTask extends BukkitRunnable implements Listener {
             cancel();
             return;
         }
+        if (player.isDead()) {
+            return;
+        }
+
+        // Force collect nearby loot drops
+        collectNearbyDrops();
 
         Location current = player.getLocation();
 
@@ -241,6 +251,13 @@ public class PunchTask extends BukkitRunnable implements Listener {
                 state = TaskState.WALKING_TO_LOOT_CHEST;
                 player.sendMessage(Component.text("Inventory is full of loot! Walking to loot chest to deposit...").color(NamedTextColor.YELLOW));
                 return;
+            } else {
+                emptyBagsByDropping();
+                if (isInventoryFull()) {
+                    plugin.getPunchTaskManager().stopTask(player);
+                    player.sendMessage(Component.text("HerePunchy stopped — inventory is full of protected items and cannot be emptied.").color(NamedTextColor.RED));
+                    return;
+                }
             }
         }
         if (isPreferredWeaponsDepleted()) {
@@ -1148,11 +1165,49 @@ public class PunchTask extends BukkitRunnable implements Listener {
         Block block = chestLoc.getBlock();
         if (!(block.getState() instanceof Container container)) return;
 
+        // 1. Deposit according to collectedCounts
+        for (Map.Entry<Material, Integer> entry : new HashMap<>(collectedCounts).entrySet()) {
+            Material material = entry.getKey();
+            int toDeposit = entry.getValue();
+            if (toDeposit <= 0) continue;
+
+            for (int i = 0; i < player.getInventory().getSize(); i++) {
+                ItemStack item = player.getInventory().getItem(i);
+                if (item == null || item.getType() != material) continue;
+
+                int countInStack = item.getAmount();
+                int depositAmount = Math.min(toDeposit, countInStack);
+
+                ItemStack toMove = item.clone();
+                toMove.setAmount(depositAmount);
+
+                Map<Integer, ItemStack> remaining = container.getInventory().addItem(toMove);
+                int deposited = depositAmount;
+                if (!remaining.isEmpty()) {
+                    ItemStack rem = remaining.values().iterator().next();
+                    deposited = depositAmount - rem.getAmount();
+                }
+
+                if (deposited > 0) {
+                    if (deposited == countInStack) {
+                        player.getInventory().setItem(i, null);
+                    } else {
+                        item.setAmount(countInStack - deposited);
+                        player.getInventory().setItem(i, item);
+                    }
+                    toDeposit -= deposited;
+                    collectedCounts.put(material, Math.max(0, collectedCounts.get(material) - deposited));
+                }
+
+                if (toDeposit <= 0) break;
+            }
+        }
+
+        // 2. Deposit any remaining items that are NOT in startingInventoryTypes
         for (int i = 0; i < player.getInventory().getSize(); i++) {
             ItemStack item = player.getInventory().getItem(i);
             if (item == null || item.getAmount() == 0) continue;
 
-            // Only deposit items that were NOT present at start of auto-patrol
             if (!startingInventoryTypes.contains(item.getType())) {
                 ItemStack toMove = item.clone();
                 Map<Integer, ItemStack> remaining = container.getInventory().addItem(toMove);
@@ -1165,7 +1220,105 @@ public class PunchTask extends BukkitRunnable implements Listener {
                 }
             }
         }
+
+        collectedCounts.clear();
         player.updateInventory();
+    }
+
+    private void emptyBagsByDropping() {
+        player.sendMessage(Component.text("Inventory is full! Dropping collected loot on the ground to free up space...").color(NamedTextColor.YELLOW));
+
+        // 1. Drop according to collectedCounts (excluding startingInventoryTypes to be absolutely safe)
+        for (Map.Entry<Material, Integer> entry : new HashMap<>(collectedCounts).entrySet()) {
+            Material material = entry.getKey();
+            if (startingInventoryTypes.contains(material)) {
+                continue; // Never drop protected/starting inventory types
+            }
+            int toDrop = entry.getValue();
+            if (toDrop <= 0) continue;
+
+            for (int i = 0; i < player.getInventory().getSize(); i++) {
+                ItemStack item = player.getInventory().getItem(i);
+                if (item == null || item.getType() != material) continue;
+
+                int countInStack = item.getAmount();
+                int dropAmount = Math.min(toDrop, countInStack);
+
+                ItemStack dropStack = item.clone();
+                dropStack.setAmount(dropAmount);
+                Item droppedItem = player.getWorld().dropItemNaturally(player.getLocation(), dropStack);
+                droppedItem.setPickupDelay(80); // 4 seconds delay
+
+                if (dropAmount == countInStack) {
+                    player.getInventory().setItem(i, null);
+                } else {
+                    item.setAmount(countInStack - dropAmount);
+                    player.getInventory().setItem(i, item);
+                }
+
+                toDrop -= dropAmount;
+                collectedCounts.put(material, Math.max(0, collectedCounts.get(material) - dropAmount));
+
+                if (toDrop <= 0) break;
+            }
+        }
+
+        // 2. Fallback: Drop any remaining items that are NOT in startingInventoryTypes
+        for (int i = 0; i < player.getInventory().getSize(); i++) {
+            ItemStack item = player.getInventory().getItem(i);
+            if (item == null || item.getAmount() == 0) continue;
+
+            if (!startingInventoryTypes.contains(item.getType())) {
+                ItemStack dropStack = item.clone();
+                Item droppedItem = player.getWorld().dropItemNaturally(player.getLocation(), dropStack);
+                droppedItem.setPickupDelay(80); // 4 seconds delay
+                player.getInventory().setItem(i, null);
+            }
+        }
+
+        collectedCounts.clear();
+        player.updateInventory();
+    }
+
+    private void collectNearbyDrops() {
+        double collectRadius = 4.0;
+        if (player.getWorld() == null) return;
+        for (Entity entity : player.getNearbyEntities(collectRadius, 3.0, collectRadius)) {
+            if (entity instanceof Item item && !item.isDead()) {
+                ItemStack stack = item.getItemStack();
+                int originalAmount = stack.getAmount();
+
+                // Try to add to player's inventory
+                Map<Integer, ItemStack> remaining = player.getInventory().addItem(stack);
+                int addedAmount = originalAmount;
+                if (!remaining.isEmpty()) {
+                    ItemStack remStack = remaining.values().iterator().next();
+                    addedAmount = originalAmount - remStack.getAmount();
+                    if (addedAmount > 0) {
+                        stack.setAmount(remStack.getAmount());
+                        item.setItemStack(stack);
+                    }
+                } else {
+                    item.remove();
+                }
+
+                if (addedAmount > 0) {
+                    player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 0.5f, 1.5f);
+                    Material material = stack.getType();
+                    collectedCounts.put(material, collectedCounts.getOrDefault(material, 0) + addedAmount);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerPickupItem(EntityPickupItemEvent event) {
+        if (event.getEntity().getUniqueId().equals(player.getUniqueId())) {
+            ItemStack itemStack = event.getItem().getItemStack();
+            Material material = itemStack.getType();
+            int amount = itemStack.getAmount();
+            collectedCounts.put(material, collectedCounts.getOrDefault(material, 0) + amount);
+        }
     }
 
     private void faceLocation(Location target) {
