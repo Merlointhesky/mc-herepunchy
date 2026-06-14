@@ -1,5 +1,5 @@
 name: HerePunchy
-version: '1.1.0'
+version: '${version}'
 main: com.herepunchy.herepunchy.HerePunchyPlugin
 description: Auto-attack and auto-defense combat bot plugin for Paper servers
 api-version: '1.21'

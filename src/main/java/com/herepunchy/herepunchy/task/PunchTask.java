@@ -26,7 +26,9 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+import java.util.ArrayList;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -945,7 +947,6 @@ public class PunchTask extends BukkitRunnable implements Listener {
                 player.sendMessage(Component.text("🛡 Auto-Defense: Blocked frontal attack!").color(NamedTextColor.GREEN));
                 if (auraSkillsHelper != null && auraSkillsHelper.isAvailable()) {
                     auraSkillsHelper.addDefenseXp(player, 15.0);
-                    if (hereRolePlayHelper.isAvailable()) hereRolePlayHelper.addCombatXp(player, 15.0);
                 }
             }
         }
@@ -958,7 +959,6 @@ public class PunchTask extends BukkitRunnable implements Listener {
         if (event instanceof EntityDamageByEntityEvent) {
             if (auraSkillsHelper != null && auraSkillsHelper.isAvailable()) {
                 auraSkillsHelper.addDefenseXp(player, 5.0);
-                if (hereRolePlayHelper.isAvailable()) hereRolePlayHelper.addCombatXp(player, 5.0);
             }
         }
     }
@@ -973,10 +973,8 @@ public class PunchTask extends BukkitRunnable implements Listener {
                 if (auraSkillsHelper != null && auraSkillsHelper.isAvailable()) {
                     if (isBow) {
                         auraSkillsHelper.addArcheryXp(player, 25.0);
-                        if (hereRolePlayHelper.isAvailable()) hereRolePlayHelper.addCombatXp(player, 25.0);
                     } else {
                         auraSkillsHelper.addFightingXp(player, 18.0);
-                        if (hereRolePlayHelper.isAvailable()) hereRolePlayHelper.addCombatXp(player, 18.0);
                     }
                 }
             }
@@ -1307,8 +1305,70 @@ public class PunchTask extends BukkitRunnable implements Listener {
                     Material material = stack.getType();
                     collectedCounts.put(material, collectedCounts.getOrDefault(material, 0) + addedAmount);
                 }
+            } else if (entity instanceof ExperienceOrb orb && !orb.isDead()) {
+                int xp = orb.getExperience();
+                int leftoverXp = applySharedMendingRepair(xp);
+                if (leftoverXp > 0) {
+                    player.giveExp(leftoverXp);
+                }
+                player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.4f, 1.2f);
+                orb.remove();
             }
         }
+    }
+
+    private int applySharedMendingRepair(int xp) {
+        if (xp <= 0) return 0;
+        int remainingXp = xp;
+        while (remainingXp > 0) {
+            List<ItemStack> eligible = new ArrayList<>();
+            ItemStack mainHand = player.getInventory().getItemInMainHand();
+            if (isMendableAndDamaged(mainHand)) eligible.add(mainHand);
+            ItemStack offHand = player.getInventory().getItemInOffHand();
+            if (isMendableAndDamaged(offHand)) eligible.add(offHand);
+            ItemStack helmet = player.getInventory().getHelmet();
+            if (isMendableAndDamaged(helmet)) eligible.add(helmet);
+            ItemStack chest = player.getInventory().getChestplate();
+            if (isMendableAndDamaged(chest)) eligible.add(chest);
+            ItemStack leggings = player.getInventory().getLeggings();
+            if (isMendableAndDamaged(leggings)) eligible.add(leggings);
+            ItemStack boots = player.getInventory().getBoots();
+            if (isMendableAndDamaged(boots)) eligible.add(boots);
+
+            if (eligible.isEmpty()) {
+                break;
+            }
+
+            // Pick a random eligible item to repair
+            ItemStack toRepair = eligible.get(new java.util.Random().nextInt(eligible.size()));
+            if (toRepair.getItemMeta() instanceof org.bukkit.inventory.meta.Damageable dmg) {
+                int damage = dmg.getDamage();
+                int xpToUse = Math.min(remainingXp, (int) Math.ceil(damage / 2.0));
+                int repairAmount = Math.min(damage, xpToUse * 2);
+                
+                dmg.setDamage(damage - repairAmount);
+                toRepair.setItemMeta(dmg);
+                player.updateInventory();
+                remainingXp -= xpToUse;
+            } else {
+                break;
+            }
+        }
+        return remainingXp;
+    }
+
+    private boolean isMendableAndDamaged(ItemStack item) {
+        if (item == null || item.getAmount() <= 0) return false;
+        if (item.getEnchantmentLevel(org.bukkit.enchantments.Enchantment.MENDING) <= 0) {
+            org.bukkit.enchantments.Enchantment mending = org.bukkit.Registry.ENCHANTMENT.get(org.bukkit.NamespacedKey.minecraft("mending"));
+            if (mending == null || item.getEnchantmentLevel(mending) <= 0) {
+                return false;
+            }
+        }
+        if (item.getItemMeta() instanceof org.bukkit.inventory.meta.Damageable dmg) {
+            return dmg.getDamage() > 0;
+        }
+        return false;
     }
 
     @EventHandler
