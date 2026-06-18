@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
@@ -70,6 +71,15 @@ public class PunchyConfigListener implements Listener {
             config.setWeaponPriority(priority);
             configManager.saveConfiguration(player.getUniqueId());
             configUI.openPriorityMenu(player);
+        }
+    }
+
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
+        Component titleComponent = event.getView().title();
+        String titleStr = PlainTextComponentSerializer.plainText().serialize(titleComponent);
+        if (titleStr.contains("HerePunchy")) {
+            event.setCancelled(true);
         }
     }
 }

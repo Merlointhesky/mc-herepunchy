@@ -19,6 +19,8 @@ A premium [Paper](https://papermc.io) Minecraft plugin for **auto-attack and aut
 - **Starting Gear Protection** — Records your initial inventory at startup; these items are marked as **protected** and will never be dumped into the loot box.
 - **Auto-Defense Mode Chat Alerts** — If all preferred weapons and backup ammo are completely depleted, sends an alert message in chat and activates bare fist/tool fighting.
 - **Offline cleanup** — Automatically clears player states and stops tasks when they disconnect.
+- **AuraSkills Integration** — Automatically awards AuraSkills Fighting (melee), Archery (ranged), and Defense (damage taken / blocked) XP immediately upon combat actions, respecting wisdom and scaling stats.
+- **HereRolePlay Integration** — Automatically awards Combat experience points directly to the player for defeating monsters and taking damage in patrols, helping level up Warrior, Paladin, and Necromancer classes.
 
 ---
 
@@ -52,6 +54,8 @@ All commands can be run with `/hp` instead of `/herepunchy`.
 
 - Paper 1.21+ server
 - Java 21+
+- (Optional) AuraSkills 2.x
+- (Optional) HereRolePlay
 
 ---
 
@@ -93,7 +97,7 @@ Build using Gradle:
 ```bash
 ./gradlew build
 ```
-The packaged JAR will be located at `build/libs/HerePunchy-1.0.0.jar`.
+The packaged JAR will be located at `build/libs/HerePunchy-1.2.2.jar`.
 
 ---
 
