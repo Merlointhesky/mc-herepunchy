@@ -97,7 +97,7 @@ Build using Gradle:
 ```bash
 ./gradlew build
 ```
-The packaged JAR will be located at `build/libs/HerePunchy-1.2.2.jar`.
+The packaged JAR will be located at `build/libs/HerePunchy-1.2.3.jar`.
 
 ---
 

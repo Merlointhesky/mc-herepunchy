@@ -679,6 +679,7 @@ public class PunchTask extends BukkitRunnable implements Listener {
         }
     }
 
+    @SuppressWarnings("removal")
     private void setupArrowProperties(Arrow arrow, double baseDamage, int punchLevel, int flameLevel, int piercingLevel, boolean pickupAllowed) {
         arrow.setDamage(baseDamage);
         arrow.setCritical(true);
